@@ -1,9 +1,11 @@
 import sys
 import datetime
+import random
+import time
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QLabel, QLineEdit, QPushButton, QTextEdit, QListWidget, 
-    QMessageBox, QGroupBox, QInputDialog
+    QMessageBox, QGroupBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -13,13 +15,14 @@ from PyQt6.QtGui import QFont
 class Veiculo:
     def __init__(self, placa):
         self.placa = placa
-        self.data_hora_entrada = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+        self.timestamp_entrada = datetime.datetime.now()
+        self.data_hora_entrada = self.timestamp_entrada.strftime("%d/%m/%Y %H:%M:%S")
         self.tempo_permanencia = 0
         self.tarifa_paga = 0.0
 
 class PilhaEstacionamento:
     def __init__(self, capacidade=5):
-        self.capacidade = capacidade
+        self.capacidade = capacity = capacidade
         self.carros = [None] * capacidade
         self.topo = -1
 
@@ -77,7 +80,7 @@ class FilaEspera:
         return veiculo
 
 class ListaSequencial:
-    def __init__(self, max_registos=100):
+    def __init__(self, max_registos=200):
         self.max_registos = max_registos
         self.registos = [None] * max_registos
         self.tamanho = 0
@@ -91,194 +94,202 @@ class ListaSequencial:
 
 def calcular_tarifa_progressiva(horas):
     if horas <= 1:
-        return 5.00  # Caso base
-    return 5.00 + (1.2 * calcular_tarifa_progressiva(horas - 1))  # Caso recursivo
+        return 500.00  # Caso base: Primeira hora fixa a 500 Kz
+    # Caso recursivo: 500 Kz + acréscimo progressivo de 20% em relação à hora anterior
+    return 500.00 + (1.2 * calcular_tarifa_progressiva(horas - 1))
 
+# ==================== ESTILO PREMIUN MODERN WHITE ("COM MAIS PESO") ====================
 
-# ==================== ESTILO MODERN WHITE (QSS) ====================
-
-ESTILO_MODERNO = """
+ESTILO_PREMIUM = """
     QMainWindow {
-        background-color: #FAFAFA;
+        background-color: #F8FAFC;
     }
     
     QLabel {
-        font-family: 'Segoe UI', Arial, sans-serif;
-        font-size: 13px;
-        color: #2C3E50;
-        font-weight: 600;
-    }
-    
-    QLineEdit {
-        background-color: #FFFFFF;
-        border: 2px solid #E0E0E0;
-        border-radius: 6px;
-        padding: 8px;
-        font-size: 14px;
-        color: #333333;
-    }
-    QLineEdit:focus {
-        border: 2px solid #3498DB;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        color: #1E293B;
     }
     
     QGroupBox {
         background-color: #FFFFFF;
-        border: 1px solid #E6E8EA;
-        border-radius: 8px;
-        margin-top: 15px;
-        font-family: 'Segoe UI', Arial, sans-serif;
+        border: 2px solid #CBD5E1;
+        border-radius: 12px;
+        margin-top: 18px;
+        font-family: 'Segoe UI';
         font-size: 14px;
-        font-weight: bold;
-        color: #34495E;
+        font-weight: 700;
+        color: #0F172A;
         padding: 15px;
     }
     QGroupBox::title {
         subcontrol-origin: margin;
         subcontrol-position: top left;
-        padding: 0 5px;
-        left: 10px;
+        padding: 0 8px;
+        left: 15px;
+        color: #0F172A;
+    }
+    
+    QLineEdit {
+        background-color: #F1F5F9;
+        border: 2px solid #CBD5E1;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #0F172A;
+    }
+    QLineEdit:focus {
+        background-color: #FFFFFF;
+        border: 2px solid #2563EB;
     }
     
     QPushButton {
-        font-family: 'Segoe UI', Arial, sans-serif;
+        font-family: 'Segoe UI', sans-serif;
         font-size: 13px;
-        font-weight: bold;
-        color: white;
-        border-radius: 6px;
-        padding: 10px;
-        min-height: 18px;
+        font-weight: 700;
+        color: #FFFFFF;
+        border-radius: 8px;
+        padding: 12px;
+        border: none;
     }
     
-    QPushButton#btnVerde {
-        background-color: #2ECC71;
+    QPushButton#btnPrimario {
+        background-color: #1E293B;
+        border: 1px solid #0F172A;
     }
-    QPushButton#btnVerde:hover {
-        background-color: #27AE60;
-    }
-    
-    QPushButton#btnVermelho {
-        background-color: #E74C3C;
-    }
-    QPushButton#btnVermelho:hover {
-        background-color: #C0392B;
+    QPushButton#btnPrimario:hover {
+        background-color: #0F172A;
     }
     
-    QPushButton#btnRoxo {
-        background-color: #9B59B6;
+    QPushButton#btnSucesso {
+        background-color: #10B981;
     }
-    QPushButton#btnRoxo:hover {
-        background-color: #8E44AD;
+    QPushButton#btnSucesso:hover {
+        background-color: #059669;
+    }
+    
+    QPushButton#btnAlerta {
+        background-color: #EF4444;
+    }
+    QPushButton#btnAlerta:hover {
+        background-color: #DC2626;
+    }
+    
+    QPushButton#btnInfo {
+        background-color: #3B82F6;
+    }
+    QPushButton#btnInfo:hover {
+        background-color: #2563EB;
     }
     
     QListWidget {
         background-color: #FFFFFF;
-        border: 1px solid #E0E0E0;
-        border-radius: 6px;
+        border: 2px solid #CBD5E1;
+        border-radius: 8px;
         padding: 5px;
         font-size: 13px;
-        color: #555555;
+        font-weight: 600;
+        color: #334155;
     }
     QListWidget::item {
-        padding: 8px;
-        border-bottom: 1px solid #F1F1F1;
-    }
-    QListWidget::item:hover {
-        background-color: #E8F4F8;
-        color: #2980B9;
-        border-radius: 4px;
+        background-color: #F8FAFC;
+        margin: 5px 0px;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #E2E8F0;
     }
     
     QTextEdit {
-        background-color: #FFFFFF;
-        border: 1px solid #E0E0E0;
-        border-radius: 6px;
-        color: #333333;
-        padding: 10px;
+        background-color: #0F172A;
+        border: none;
+        border-radius: 10px;
+        color: #38BDF8;
+        padding: 15px;
     }
 """
 
-# ==================== INTERFACE GRÁFICA (PyQt6) ====================
+# ==================== INTERFACE GRÁFICA ====================
 
 class JanelaEstacionamento(QMainWindow):
     def __init__(self):
         super().__init__()
-        
         self.estacionamento = PilhaEstacionamento(capacidade=5)
         self.fila_espera = FilaEspera()
-        self.historico = ListaSequencial(max_registos=100)
-        
+        self.historico = ListaSequencial(max_registos=200)
         self.initUI()
         
     def initUI(self):
-        self.setWindowTitle("SmartPark — Gestão de Estacionamento Inteligente")
-        self.setGeometry(100, 100, 950, 600)
-        
-        # Aplicar o tema visual moderno
-        self.setStyleSheet(ESTILO_MODERNO)
+        self.setWindowTitle("SmartPark PRO — Gestão Integrada por Escaneamento OCR")
+        self.setGeometry(100, 100, 1050, 680)
+        self.setStyleSheet(ESTILO_PREMIUM)
         
         widget_central = QWidget()
         self.setCentralWidget(widget_central)
         layout_principal = QHBoxLayout(widget_central)
-        layout_principal.setSpacing(15)
-        layout_principal.setContentsMargins(15, 15, 15, 15)
+        layout_principal.setSpacing(20)
+        layout_principal.setContentsMargins(20, 20, 20, 20)
         
-        # ---------------- ESQUERDA: Painel de Controlos ----------------
+        # ---------------- PAINEL ESQUERDO: Controlos e OCR ----------------
         layout_esquerda = QVBoxLayout()
         layout_esquerda.setSpacing(15)
         
-        # Título do Sistema
-        lbl_titulo = QLabel("SmartPark PRO")
-        lbl_titulo.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
-        lbl_titulo.setStyleSheet("color: #2C3E50; margin-bottom: 5px;")
-        layout_esquerda.addWidget(lbl_titulo)
+        lbl_marca = QLabel("SmartPark PRO 🇦🇴")
+        lbl_marca.setFont(QFont("Segoe UI", 22, QFont.Weight.Bold))
+        lbl_marca.setStyleSheet("color: #0F172A; letter-spacing: -1px;")
+        layout_esquerda.addWidget(lbl_marca)
         
-        grupo_entrada = QGroupBox("Entrada de Veículo")
+        grupo_entrada = QGroupBox("Terminal de Entrada Inteligente")
         layout_input = QVBoxLayout()
-        layout_input.setSpacing(8)
-        self.lbl_placa = QLabel("Matrícula / Placa:")
-        self.txt_placa = QLineEdit()
-        self.txt_placa.setPlaceholderText("Ex: LD-00-00-AA")
+        layout_input.setSpacing(10)
         
-        self.btn_entrada = QPushButton("Registar Entrada")
-        self.btn_entrada.setObjectName("btnVerde")
+        self.txt_placa = QLineEdit()
+        self.txt_placa.setPlaceholderText("Introduza ou Escaneie...")
+        
+        self.btn_ocr = QPushButton("📷 Escanear Matrícula (Câmara OCR)")
+        self.btn_ocr.setObjectName("btnPrimario")
+        self.btn_ocr.clicked.connect(self.simular_escaneamento_ocr)
+        
+        self.btn_entrada = QPushButton("Validar e Entrar no Parque")
+        self.btn_entrada.setObjectName("btnSucesso")
         self.btn_entrada.clicked.connect(self.processar_entrada)
         
-        layout_input.addWidget(self.lbl_placa)
+        layout_input.addWidget(QLabel("Matrícula do Veículo:"))
         layout_input.addWidget(self.txt_placa)
+        layout_input.addWidget(self.btn_ocr)
         layout_input.addWidget(self.btn_entrada)
         grupo_entrada.setLayout(layout_input)
         
-        grupo_acoes = QGroupBox("Operações")
-        layout_acoes = QVBoxLayout()
-        layout_acoes.setSpacing(10)
+        grupo_operacoes = QGroupBox("Painel de Controlo Operacional")
+        layout_operacoes = QVBoxLayout()
+        layout_operacoes.setSpacing(10)
         
-        self.btn_saida = QPushButton("Libertar Vaga (Saída LIFO)")
-        self.btn_saida.setObjectName("btnVermelho")
+        self.btn_saida = QPushButton("🚪 Efetuar Saída e Cobrança (LIFO)")
+        self.btn_saida.setObjectName("btnAlerta")
         self.btn_saida.clicked.connect(self.processar_saida)
         
-        self.btn_relatorio = QPushButton("Gerar Relatório Financeiro")
-        self.btn_relatorio.setObjectName("btnRoxo")
+        self.btn_relatorio = QPushButton("📊 Gerar Relatório de Auditoria")
+        self.btn_relatorio.setObjectName("btnInfo")
         self.btn_relatorio.clicked.connect(self.exibir_relatorio)
         
-        layout_acoes.addWidget(self.btn_saida)
-        layout_acoes.addWidget(self.btn_relatorio)
-        grupo_acoes.setLayout(layout_acoes)
+        layout_operacoes.addWidget(self.btn_saida)
+        layout_operacoes.addWidget(self.btn_relatorio)
+        grupo_operacoes.setLayout(layout_operacoes)
         
         layout_esquerda.addWidget(grupo_entrada)
-        layout_esquerda.addWidget(grupo_acoes)
+        layout_esquerda.addWidget(grupo_operacoes)
         layout_esquerda.addStretch()
         
-        # ---------------- CENTRO: Estado das Estruturas ----------------
+        # ---------------- PAINEL CENTRAL: Estado Físico ----------------
         layout_centro = QVBoxLayout()
         layout_centro.setSpacing(15)
         
-        grupo_pilha = QGroupBox("Estacionamento Físico (Pilha)")
+        grupo_pilha = QGroupBox("Vagas Internas (PILHA — Último a entrar sai primeiro)")
         layout_pilha = QVBoxLayout()
         self.lista_pilha = QListWidget()
         layout_pilha.addWidget(self.lista_pilha)
         grupo_pilha.setLayout(layout_pilha)
         
-        grupo_fila = QGroupBox("Fila de Espera Externa (Fila)")
+        grupo_fila = QGroupBox("Fila de Espera de Acesso (FILA — Ordem de Chegada)")
         layout_fila = QVBoxLayout()
         self.lista_fila = QListWidget()
         layout_fila.addWidget(self.lista_fila)
@@ -287,32 +298,48 @@ class JanelaEstacionamento(QMainWindow):
         layout_centro.addWidget(grupo_pilha)
         layout_centro.addWidget(grupo_fila)
         
-        # ---------------- DIREITA: Monitor e Logs ----------------
+        # ---------------- PAINEL DIREITO: Consola Operacional ----------------
         layout_direita = QVBoxLayout()
-        grupo_logs = QGroupBox("Consola de Monitorização e Relatórios")
+        grupo_logs = QGroupBox("Consola do Sistema e Faturação em Tempo Real")
         layout_log_box = QVBoxLayout()
         self.txt_logs = QTextEdit()
         self.txt_logs.setReadOnly(True)
-        # CORREÇÃO DA LINHA: Passado para o inteiro 11 para evitar o TypeError
         self.txt_logs.setFont(QFont("Courier New", 11))
         layout_log_box.addWidget(self.txt_logs)
         grupo_logs.setLayout(layout_log_box)
         layout_direita.addWidget(grupo_logs)
         
-        # Adicionar painéis ao layout principal
-        layout_principal.addLayout(layout_esquerda, 2)
-        layout_principal.addLayout(layout_centro, 3)
-        layout_principal.addLayout(layout_direita, 4)
+        # Montagem Estrutural
+        layout_principal.addLayout(layout_esquerda, 3)
+        layout_principal.addLayout(layout_centro, 4)
+        layout_principal.addLayout(layout_direita, 5)
         
         self.atualizar_ecran()
-        self.log_mensagem("Sistema online. Aguardando veículos.")
+        self.log_mensagem("SmartPark Core carregado. Faturação configurada em Kwanzas (AOA).")
 
-    # ---------------- MÉTODOS DE AÇÃO ----------------
+    # ---------------- LÓGICA AVANÇADA / INTELIGÊNCIA ----------------
+
+    def simular_escaneamento_ocr(self):
+        """ Simula o processo de foco de câmara e leitura OCR """
+        self.txt_logs.clear()
+        self.log_mensagem("📷 [OCR] A iniciar módulo de captação de imagem...")
+        self.log_mensagem("📷 [OCR] A processar frames... [||||||||||----] 50%")
+        
+        # Estruturação de matrículas reais de Angola
+        provincias = ["LD", "HU", "BG", "CB", "CC", "BA"]
+        prov = random.choice(provincias)
+        num1 = random.randint(10, 99)
+        num2 = random.randint(10, 99)
+        letras = "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ", k=2))
+        matricula_digitalizada = f"{prov}-{num1}-{num2}-{letras}"
+        
+        self.log_mensagem(f"📷 [OCR] Processamento Concluído! Matrícula detetada: [{matricula_digitalizada}]")
+        self.txt_placa.setText(matricula_digitalizada)
 
     def processar_entrada(self):
         placa = self.txt_placa.text().strip().upper()
         if not placa:
-            QMessageBox.warning(self, "Aviso", "Por favor, introduza uma matrícula válida.")
+            QMessageBox.warning(self, "Erro OCR", "Nenhuma matrícula foi inserida ou escaneada.")
             return
         
         novo_carro = Veiculo(placa)
@@ -320,88 +347,97 @@ class JanelaEstacionamento(QMainWindow):
         
         if not self.estacionamento.esta_cheia():
             self.estacionamento.push(novo_carro)
-            self.log_mensagem(f"🟢 ENTRADA: Carro [{placa}] entrou diretamente numa vaga.")
+            self.log_mensagem(f"ENTRADA 🟢 | Vaga {self.estacionamento.topo + 1} ocupada pelo veículo [{placa}].")
         else:
             self.fila_espera.enfileirar(novo_carro)
-            self.log_mensagem(f"🟡 FILA: Estacionamento cheio! [{placa}] movido para a fila de espera.")
+            self.log_mensagem(f"FILA 🟡    | Estacionamento esgotado! [{placa}] movido para a fila exterior.")
             
         self.atualizar_ecran()
 
     def processar_saida(self):
         if self.estacionamento.esta_vazia():
-            QMessageBox.information(self, "Informação", "Nenhum veículo estacionado para efetuar a saída.")
+            QMessageBox.information(self, "Aviso", "O estacionamento não tem carros no momento.")
             return
         
-        horas, ok = QInputDialog.getInt(self, "Cálculo de Tarifa", "Quantas horas o veículo permaneceu no local?", value=1, min=1, max=168)
+        carro_saindo = self.estacionamento.pop()
         
-        if ok:
-            carro_saindo = self.estacionamento.pop()
-            carro_saindo.tempo_permanencia = horas
+        # Lógica de simulação de tempo rápida para testes:
+        # 1 segundo real que o carro passou na pilha passa a valer 1 hora no simulador.
+        agora = datetime.datetime.now()
+        segundos_decorridos = int((agora - carro_saindo.timestamp_entrada).total_seconds())
+        
+        horas_faturadas = segundos_decorridos if segundos_decorridos > 0 else 1
+        
+        carro_saindo.tempo_permanencia = horas_faturadas
+        carro_saindo.tarifa_paga = calcular_tarifa_progressiva(horas_faturadas)
+        
+        self.historico.inserir(carro_saindo)
+        
+        self.log_mensagem(
+            f"SAÍDA 🔴   | Veículo [{carro_saindo.placa}] saiu do topo.\n"
+            f"            • Tempo de Permanência: {horas_faturadas} hora(s) simulada(s)\n"
+            f"            • Tarifa Progressiva (Recursiva): {carro_saindo.tarifa_paga:,.2f} Kz"
+        )
+        
+        # Entrada automática do primeiro elemento da Fila de Espera
+        if not self.fila_espera.esta_vazia():
+            proximo = self.fila_espera.desenfileirar()
+            proximo.timestamp_entrada = datetime.datetime.now()
+            proximo.data_hora_entrada = proximo.timestamp_entrada.strftime("%d/%m/%Y %H:%M:%S")
+            self.estacionamento.push(proximo)
+            self.log_mensagem(f"FLUXO 🔵   | Fila avançou. Veículo [{proximo.placa}] entrou para a vaga libertada.")
             
-            # Executa a função recursiva de cálculo de tarifa
-            carro_saindo.tarifa_paga = calcular_tarifa_progressiva(horas)
-            
-            # Regista na Lista Sequencial
-            self.historico.inserir(carro_saindo)
-            
-            self.log_mensagem(f"🔴 SAÍDA: Carro [{carro_saindo.placa}] saiu do topo.\n  - Tempo total: {horas}h\n  - Faturação (Recursiva): Ezk {carro_saindo.tarifa_paga:.2f}")
-            
-            # Puxa o próximo da fila se houver vagas livres
-            if not self.fila_espera.esta_vazia():
-                proximo_carro = self.fila_espera.desenfileirar()
-                proximo_carro.data_hora_entrada = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-                self.estacionamento.push(proximo_carro)
-                self.log_mensagem(f"🔵 VAGA PREENCHIDA: Carro [{proximo_carro.placa}] avançou da fila de espera para a vaga aberta.")
-                
-            self.atualizar_ecran()
+        self.atualizar_ecran()
 
     def exibir_relatorio(self):
         self.txt_logs.clear()
-        self.txt_logs.append("==================================================\n")
-        self.txt_logs.append("        RELATÓRIO DE FATURAÇÃO E AUDITORIA        \n")
-        self.txt_logs.append("==================================================\n")
-        self.txt_logs.append(f"{'Matrícula':<15}{'Data/Hora':<18}{'Tempo':<8}{'Tarifa'}\n")
-        self.txt_logs.append("-" * 50 + "\n")
+        self.txt_logs.append("========================================================\n")
+        self.txt_logs.append("           RELATÓRIO FINANCEIRO DE ARRECADAÇÃO         \n")
+        self.txt_logs.append("========================================================\n")
+        self.txt_logs.append(f"{'Matrícula':<16}{'Entrada':<12}{'Permanência':<14}{'Valor Pago'}\n")
+        self.txt_logs.append("-" * 56 + "\n")
         
-        total_faturado = 0.0
+        total_acumulado = 0.0
         for i in range(self.historico.tamanho):
             v = self.historico.registos[i]
-            self.txt_logs.append(f"{v.placa:<15}{v.data_hora_entrada:<18}{str(v.tempo_permanencia)+'h':<8}Ezk {v.tarifa_paga:.2f}\n")
-            total_faturado += v.tarifa_paga
+            hora_entrada_limpa = v.data_hora_entrada.split()[1]
+            self.txt_logs.append(f"{v.placa:<16}{hora_entrada_limpa:<12}{str(v.tempo_permanencia)+'h':<14}{v.tarifa_paga:,.2f} Kz\n")
+            total_acumulado += v.tarifa_paga
             
-        self.txt_logs.append("-" * 50 + "\n")
-        self.txt_logs.append(f"TOTAL ARRECADADO NO DIA: Ezk {total_faturado:.2f}\n")
-        self.txt_logs.append("==================================================\n")
+        self.txt_logs.append("-" * 56 + "\n")
+        self.txt_logs.append(f"TOTAL FATURADO NO PARQUE: {total_acumulado:,.2f} Kz\n")
+        self.txt_logs.append("========================================================\n")
 
-    # ---------------- ATUALIZAÇÃO DA INTERFACE ----------------
+    # ---------------- ATUALIZAÇÃO DA INTERFACE VISUAL ----------------
 
     def atualizar_ecran(self):
-        # Atualizar a Pilha Visual (LIFO)
+        # Desenhar estado gráfico da Pilha
         self.lista_pilha.clear()
         if self.estacionamento.esta_vazia():
-            self.lista_pilha.addItem("⚠️ [ Estacionamento Totalmente Livre ]")
+            self.lista_pilha.addItem("   [ ⭕ PARQUE TOTALMENTE LIVRE ]")
         else:
             for i in range(self.estacionamento.topo, -1, -1):
                 carro = self.estacionamento.carros[i]
-                self.lista_pilha.addItem(f" Vaga {i+1} (Topo): {carro.placa}  ➔ Entrada: {carro.data_hora_entrada}")
+                status_topo = " 🚨 [PRÓXIMO A SAIR - TOPO]" if i == self.estacionamento.topo else ""
+                self.lista_pilha.addItem(f" Vaga {i+1} ➔ {carro.placa} | Entrada: {carro.data_hora_entrada.split()[1]} {status_topo}")
                 
-        # Atualizar a Fila de Espera Visual (FIFO)
+        # Desenhar estado gráfico da Fila
         self.lista_fila.clear()
         if self.fila_espera.esta_vazia():
-            self.lista_fila.addItem("✅ [ Sem carros em espera ]")
+            self.lista_fila.addItem("   [ ✅ SEM VIATURAS RETIDAS NA FILA ]")
         else:
             atual = self.fila_espera.frente
             pos = 1
             while atual is not None:
-                self.lista_fila.addItem(f" Pos {pos}º ➔ {atual.veiculo.placa}")
+                self.lista_fila.addItem(f" Posição {pos}º ➔ {atual.veiculo.placa} (Aguardando vaga livre)")
                 atual = atual.proximo
                 pos += 1
 
-    def log_mensagem(self, message):
+    def log_mensagem(self, msg):
         horario = datetime.datetime.now().strftime("%H:%M:%S")
-        self.txt_logs.append(f"[{horario}] {message}\n")
+        self.txt_logs.append(f"[{horario}] {msg}\n")
 
-# ==================== EXECUÇÃO DO PROGRAMA ====================
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     janela = JanelaEstacionamento()
